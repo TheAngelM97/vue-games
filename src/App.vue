@@ -1,9 +1,11 @@
 <template>
   <div id="app">
-    <div id="nav">
+    <main-header></main-header>
+    <!-- <div id="nav">
       <router-link to="/">Home</router-link> |
       <router-link to="/about">About</router-link>
-    </div>
+    </div> -->
+    
     <router-view/>
   </div>
 </template>
@@ -29,3 +31,13 @@
   color: #42b983;
 }
 </style>
+
+<script>
+  import MainHeader from './components/layout/MainHeader'
+
+  export default {
+    components: {
+      MainHeader
+    }
+  }
+</script>
