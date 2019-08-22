@@ -38,7 +38,7 @@
 		  			this.$store.state.kinvey_config.base_url + '/appdata/' + this.$store.state.kinvey_config.api_key + '/games',
 		  			{
 		  			 	headers: {
-		  			 		'Authorization': 'Basic ' + this.$store.state.kinvey_config.auth_key,
+		  			 		'Authorization': this.$store.getters.authKey,
 		  			 		'X-Kinvey-API-Version': 3
 		  			 	}
 		  			}
