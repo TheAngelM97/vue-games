@@ -3,7 +3,7 @@
     <div class="container">
     	<img width="300" class="mx-auto d-block" alt="Vue logo" src="../assets/weband-logo.png">
     	<carousel></carousel>
-		<game-listing></game-listing>
+		  <game-listing></game-listing>
     </div>
   </div>
 </template>
