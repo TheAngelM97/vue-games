@@ -2,45 +2,61 @@ import Vue from 'vue'
 import Vuex from 'vuex'
 
 import app from '@/config/app'
-import kinvey from '@/config/kinvey'
+// import kinvey from '@/config/kinvey'
+import api from '@/config/api'
 
 Vue.use(Vuex)
 
 export default new Vuex.Store({
   state: {
   	app_name: app.app_name,
-  	kinvey_config: kinvey,
+  	api_config: api,
   	authToken: localStorage.getItem('token') || null,
-  	user: {}
+  	user_stringified: localStorage.getItem('user') || "[]"
   },
   getters: {
-  	authKey: state =>  {
-  		return `Basic ${btoa(state.kinvey_config.api_key+':'+state.kinvey_config.master_secret)}`
-  	},
   	authenticated: state => {
   		return state.authToken !== null
-  	}
+  	},
+    user: state => {
+      return JSON.parse(state.user_stringified)
+    }
   },
   mutations: {
-  	login(state, user) {
-  		state.user = user
-  		state.authToken = user._kmd.authtoken
+  	login(state, {token, user}) {
+  		state.user_stringified = JSON.stringify(user)
+  		state.authToken = token
   	}
   },
   actions: {
   	login(context, user_info) {
   		return new Promise((resolve, reject) => {
-	  		axios.post(`${context.state.kinvey_config.base_url}/user/${context.state.kinvey_config.api_key}/login`, user_info, {
-	  			headers: {
-	  				'Authorization': context.getters.authKey,
-	  				'X-Kinvey-API-Version': 3
-	  			}
-	  		})
+        user_info.grant_type = 'password';
+        user_info.client_id = context.state.api_config.client_id
+        user_info.client_secret = context.state.api_config.client_secret
+        user_info.scope = ''
+
+	  		axios.post(`${context.state.api_config.oauth_url}/token`, user_info)
 	  			.then(res => {
-	  				let token = res.data._kmd.authtoken
-	  				localStorage.setItem('token', token)
-	  				axios.defaults.headers.common['Authorization'] = token
-	  				context.commit('login', res.data)
+            console.log(res.data)
+	  			  
+            let token = res.data.access_token
+            localStorage.setItem('token', token)
+            axios.defaults.headers.common['Authorization'] = 'Bearer ' + token
+
+            // Get the user
+            context.dispatch('getUserByToken', token)
+              .then(user_res => {
+                let user = user_res.data
+                localStorage.setItem('user', JSON.stringify(user))
+                context.commit('login', {token, user})
+              })
+              .catch(user_err => {
+                console.log(user_err)
+                localStorage.removeItem('token')
+                reject(user_err)
+              })
+
 
 	  				resolve(res)
 	  			})
@@ -50,6 +66,46 @@ export default new Vuex.Store({
 	  				reject(err)
 	  			})
 	  	})
-  	}
+  	},
+    register(context, user_info) {
+      return new Promise((resolve, reject) => { 
+        axios.post(`${context.state.api_config.base_url}/register`, user_info)
+          .then(res => {
+            let token = res.data.access_token
+            localStorage.setItem('token', token)
+            axios.defaults.headers.common['Authorization'] = 'Bearer ' + token
+
+            // Get the user
+            context.dispatch('getUserByToken', token)
+              .then(user_res => {
+                let user = user_res.data
+                localStorage.setItem('user', JSON.stringify(user))
+                context.commit('login', {token, user})
+              })
+              .catch(user_err => {
+                console.log(user_err)
+                localStorage.removeItem('token')
+                reject(user_err)
+              })
+
+              resolve(res)
+          })
+          .catch(err => {
+            console.log(err)
+            reject(err)
+          })
+      })
+    },
+    getUserByToken(context, token) {
+      return new Promise((resolve, reject) => { 
+        axios.get(`${context.state.api_config.base_url}/user`)
+          .then(res => {
+            resolve(res)
+          })
+          .catch(err => {
+            reject(user_err)
+          })
+      })
+    }
   }
 })

@@ -34,17 +34,9 @@
 		},
 		methods: {
 		  	getGames: function() {
-		  		axios.get(
-		  			this.$store.state.kinvey_config.base_url + '/appdata/' + this.$store.state.kinvey_config.api_key + '/games',
-		  			{
-		  			 	headers: {
-		  			 		'Authorization': this.$store.getters.authKey,
-		  			 		'X-Kinvey-API-Version': 3
-		  			 	}
-		  			}
-		  		)
+		  		axios.get(this.$store.state.api_config.base_url + '/games')
 				.then(res => {
-					this.games = res.data
+					this.games = res.data.data
 				})
 				.catch(err => {
 					console.log(err)

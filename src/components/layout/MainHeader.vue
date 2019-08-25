@@ -22,7 +22,7 @@
             <router-link class="nav-link" to="/register">Register</router-link>
           </li>
           <li v-if="auth" class="nav-item">
-            Welcome, {{ user.username }}
+            Welcome, {{ user.name }}
           </li>
         </ul>
       </div>
@@ -39,7 +39,7 @@
   export default {
     computed: {
       user: function() {
-        return this.$store.state.user
+        return this.$store.getters.user
       },
       auth: function() {
         return this.$store.getters.authenticated

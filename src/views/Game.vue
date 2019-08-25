@@ -16,19 +16,9 @@
 		},
 		methods: {
 			getGame: function() {
-				axios.get(this.$store.state.kinvey_config.base_url + '/appdata/' + this.$store.state.kinvey_config.api_key + '/games', {
-					params: {
-						query: {
-							slug: this.$route.params.slug
-						}
-					},
-					headers: {
-	  			 		'Authorization': this.$store.getters.authKey,
-	  			 		'X-Kinvey-API-Version': 3
-	  			 	}
-				})
+				axios.get(this.$store.state.api_config.base_url + '/games/' + this.$route.params.slug)
 				.then(res => {
-					this.game = lodash.first(res.data)
+					this.game = res.data.data
 				})
 				.catch(err => {
 					console.log(err)
